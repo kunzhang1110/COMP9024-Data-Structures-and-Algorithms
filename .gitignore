@@ -1,0 +1,7 @@
+#exclude
+*.docx
+*.zip
+*.pptx
+/Lecture Note
+/Homework
+/Textbook

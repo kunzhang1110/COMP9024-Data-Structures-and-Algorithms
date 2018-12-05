@@ -1,0 +1,183 @@
+/**
+ * Assignment 1 for COMP9024 
+ * @author Kun Zhang (z5086704)
+ * 
+ */
+
+import java.util.*;
+import java.io.*;
+
+public class MyDlist extends DList{
+	
+	/** Q1*/
+	public MyDlist (){
+		super();
+	}
+	
+	/**Q2
+	 * @throws FileNotFoundException */
+	public MyDlist (String f) throws FileNotFoundException{
+		if (f == "stdin"){
+			readStdin();
+		}else {
+			readFile(f);
+		}
+	}
+	
+	// read from standard input
+	private void readStdin(){
+		String in = null;
+		Scanner scanner = new Scanner(System.in);
+		in = scanner.nextLine();		
+		while(!in.isEmpty()){
+			DNode inNode = new DNode(in,null,null);
+			this.addLast(inNode);
+			in = scanner.nextLine();
+		}
+		scanner.close();
+	}
+	
+	// read from a file
+	private void readFile(String fname) throws FileNotFoundException{
+		File file = new File(fname);
+		
+		Scanner scanner = new Scanner(file);
+
+		while(scanner.hasNext()){
+			String in = scanner.next();
+			DNode inNode = new DNode(in,null,null);
+			this.addLast(inNode);
+		}		
+		scanner.close();
+	}
+	
+	/**Q3*/
+	public static void printList(MyDlist u){
+		if(u.size>0){
+			DNode node = u.header.next;
+			while(node!=u.trailer){
+				System.out.println(node.element);
+				node = node.next;
+			}
+		}
+	}
+	
+	/**Q4*/
+	public static MyDlist cloneList(MyDlist u){
+		if(u.size>0){
+			DNode unode = u.header.next;
+			MyDlist clonedDList = new MyDlist();
+			while(unode!=u.trailer){
+				DNode newNode = new DNode(unode.element, null, null);				
+				clonedDList.addLast(newNode);
+				unode = unode.next;
+			}	
+			return clonedDList;
+		}
+		return null;
+	}
+		
+	/**Q5*/
+	public static MyDlist union(MyDlist u, MyDlist v){//u, v has distinct elements
+		MyDlist unionMyDlist = cloneList(u);
+		DNode unionnode = unionMyDlist.header.next;	
+		DNode vnode = v.header.next;		
+		
+		
+		while (unionnode!=unionMyDlist.trailer && unionMyDlist.size<=u.size){
+			while (vnode!=v.trailer){
+				System.out.println(unionnode.element+" "+vnode.element);
+				if(unionnode.element!=vnode.element){
+					DNode newNode = new DNode(vnode.element,null,null);
+					unionMyDlist.addLast(newNode);
+				}
+				vnode = vnode.next;
+			}
+			unionnode = unionnode.next;
+			vnode= v.header.next;
+		}
+		return unionMyDlist;
+	}
+			
+	/**Q6*/
+	public static MyDlist intersection(MyDlist u, MyDlist v){//u, v has distinct elements
+		MyDlist intMyDlist = new MyDlist();
+		DNode unode = u.header.next;			
+		DNode vnode = v.header.next;		
+		
+
+		while (unode!=u.trailer){
+			while (vnode!=v.trailer){
+			
+				if(unode.element==vnode.element){
+				
+					DNode newNode = new DNode(unode.element,null,null);
+					intMyDlist.addLast(newNode);
+				}
+				vnode = vnode.next;
+			}
+			unode = unode.next;
+			vnode = v.header.next;
+		}
+		return intMyDlist;
+	}	  
+
+		
+	/**main*/
+	public static void main(String[] args) throws Exception{
+		 
+		//   System.out.println("please type some strings, one string each line and an empty line for the end of input:");
+		    /** Create the first doubly linked list
+		    by reading all the strings from the standard input. */
+		    MyDlist firstList = new MyDlist("stdin");
+	
+		    /** Print all elements in firstList */
+		//    printList(firstList);
+	
+		    /** Create the second doubly linked list                         
+		    by reading all the strings from the file myfile that contains some strings. */
+		    /** Replace the argument by the full path name of the text file */  
+		    MyDlist secondList=new MyDlist("myfile.txt");
+
+		   /** Print all elements in secondList */                     
+		 //   printList(secondList);
+	
+		   /** Clone firstList */
+	    MyDlist thirdList = cloneList(firstList);
+
+	   /** Print all elements in thirdList. */
+	//    printList(thirdList);
+	
+	    /** Clone secondList */
+	    MyDlist fourthList = cloneList(secondList);
+
+	   /** Print all elements in fourthList. */
+	//    printList(fourthList);
+	    
+	    /** Compute the union of firstList and secondList */
+	    MyDlist fifthList = union(firstList, secondList);
+
+	   /** Print all elements in thirdList. */ 
+	    printList(fifthList); 
+	    
+	    
+	    /** Compute the intersection of thirdList and fourthList */
+	  //  MyDlist sixthList = intersection(thirdList, fourthList);
+
+	   /** Print all elements in sixthList. */
+	//   printList(sixthList);
+	    
+	
+	}
+	
+
+}
+	
+	
+	
+	
+	
+	
+	
+
+

@@ -1,0 +1,375 @@
+/**
+ * Assignment 2 for COMP9024 2017S1
+ * @author Kun Zhang (z5086704)
+ */
+
+package net.datastructures;
+
+import java.util.ArrayList;
+import javax.swing.*;
+import java.awt.*;
+
+
+public class ExtendedAVLTree<K, V> extends AVLTree<K, V>{
+	/** Question 1
+	 * This class method creates an identical copy of the AVL tree specified by the 
+	 * parameter and returns a reference to the new AVL tree.
+	 * return a cloned tree.
+	 * <K,V>: K - key, integer; V - value, string
+	 * @param tree: the tree to be cloned.
+	 * 
+	 * Time Complexity Analysis
+	 * Initialization and return are primitive operations: O(1)
+	 * The cloneTree method is a recursive method that visits all n node: O(n)
+	 * Therefore, the overall complexity is O(n)
+	 * */
+	
+	public static <K, V> AVLTree<K, V> clone(AVLTree<K,V> tree){
+		AVLTree<K, V> newTree = new AVLTree<K, V>(); 		// create a new tree to be cloned
+		newTree.numEntries = tree.numEntries;				// copy the size of tree to be cloned
+		newTree.insert(tree.root.element().getKey(), tree.root.element().getValue()); // clone the root first
+		cloneTree(newTree.root,tree.root);					// recursive cloning by node; start with root
+		return newTree;
+	}
+
+	/* This private method clone recursively clones the trees
+	 * newNode: new node that clones oldNode
+	 * oldNode: node to be cloned
+	 */
+	private static<K,V> void cloneTree(BTPosition<Entry<K,V>> newNode, BTPosition<Entry<K,V>> oldNode){
+        AVLNode<K,V> left = new AVLNode<K,V>();		// create left child node
+        AVLNode<K,V> right = new AVLNode<K,V>();	// create right child node
+        
+        // link parent and left and right children
+        newNode.setLeft(left);	
+        left.setParent(newNode); 
+        newNode.setRight(right); 
+        right.setParent(newNode);
+        
+        // recursion: left children
+        if (oldNode.getLeft().element() != null) { //if node is valid
+            left.setElement(oldNode.getLeft().element()); 	//clone node
+            cloneTree(left, oldNode.getLeft()); 
+        }
+        // recursion: right children
+        if (oldNode.getRight().element() != null) {
+        	right.setElement(oldNode.getRight().element()); // clone node
+            cloneTree(right, oldNode.getRight()); // copy the size of tree to be cloned
+        }   
+	}
+
+	/** Question 2
+	 * This class method merges two AVL trees, tree1 and tree2, into a new tree, and
+	 * destroys tree1 and tree2.
+	 * return a merged tree
+	 *  <K,V>: K - key, integer; V - value, string
+	 * @param tree1, tree2: the trees to be merged.
+	 * 
+	 * */
+	public static <K, V> AVLTree<K, V> merge(AVLTree<K,V> tree1, AVLTree<K,V> tree2){
+		// create new ArrayLists to store tree nodes
+        ArrayList<Position<Entry<K, V>>> treeList1 = new ArrayList<Position<Entry<K, V>>>();
+        ArrayList<Position<Entry<K, V>>> treeList2 = new ArrayList<Position<Entry<K, V>>>();
+		
+        // sort values in each tree and put sorted values in ArrayLists
+        sortTreeinList(tree1, tree1.root(), treeList1);
+        sortTreeinList(tree2, tree2.root(), treeList2);
+        
+        ArrayList<Position<Entry<K, V>>> listMerged = mergeList(treeList1,treeList2);	//merge two lists in to one
+        AVLTree<K, V> treeMerged = new AVLTree<K, V>();	//create a new Tree to store merged Tree
+        treeMerged.root = convertListtoTree(treeMerged, null, listMerged, 0, listMerged.size()-1);	//convert merged list into merged tree;
+        treeMerged.numEntries = tree1.numEntries + tree2.numEntries;	// copy the size of trees to be cloned
+        tree1 = null; // destroy 1
+        tree2 = null; // destroy 2
+        return treeMerged;
+	}
+	
+	/* A private method to retrieve values of a tree and store them in an ArrayList
+	 * Recursive In-order traversal of the tree; sorted order small to large in the ArrayList
+	 * tree: tree to be merged
+	 * node: a node in the tree;
+	 * arrayList: arrayList to hold the values in tree
+	 * */
+	private static <K,V> void sortTreeinList(AVLTree<K,V> tree, Position<Entry<K, V>> node, ArrayList<Position<Entry<K, V>>> arrayList){
+		if(tree.hasLeft(node)){	
+			sortTreeinList(tree, tree.left(node), arrayList);	//left retrieval
+		}
+		
+        if(node.element() != null){
+        	arrayList.add(node);	//retrieve element
+        }
+        
+        if(tree.hasRight(node)){
+        	sortTreeinList(tree, tree.right(node), arrayList);	//right retrieval
+        }			
+	}
+	
+	/* A private method to merge two ArrayList
+	 * Recursive In-order traversal of the tree; sorted order small to large in the ArrayList
+	 * return a merged list
+	 * tree: tree to be merged
+	 * node: a node in the tree;
+	 * arrayList: arrayList to hold the values in tree
+	 * */
+	private static <K, V> ArrayList<Position<Entry<K, V>>> mergeList(ArrayList<Position<Entry<K, V>>> list1, ArrayList<Position<Entry<K, V>>> list2){
+		ArrayList<Position<Entry<K, V>>> mergedList = new ArrayList<Position<Entry<K, V>>>();	
+	    
+		int i = 0;	// index for list1
+		int j = 0;	// index for list2
+		
+		while (i<list1.size() && j <list2.size()){	//if either values in list 1 and list 2 are deplete
+													//keep putting into merged list
+			Position<Entry<K, V>> node1 = list1.get(i);	//retrieve node 1
+			Position<Entry<K, V>> node2 = list2.get(j);	//retrieve node 2
+			int key1 = Integer.parseInt(node1.element().getKey().toString());	//retrieve key 1 covert to integer
+			int key2 = Integer.parseInt(node2.element().getKey().toString());	//retrieve key 2 covert to integer			
+			
+			if (node1.element() == null){	//if null value, skip
+				i++;
+				continue;
+			}			
+			
+			if (node2.element() == null){	//if null value, skip
+				j++;
+				continue;
+			}			
+			
+			if (key1<=key2){	// compare a pair of value in lists put the smaller in mergedList
+				mergedList.add(node1);
+				i++;
+			}else{
+				mergedList.add(node2);		
+				j++;
+			}	
+		}
+		
+		if(i<list1.size()){	//if list1 is not deplete
+			while(i<list1.size()){	//if list1 is not deplete
+				mergedList.add(list2.get(i));	//keep adding all elements
+				i++;
+			}
+		}
+		
+		if(j<list2.size()){	//if list 2 is not deplete
+			while(j<list2.size()){	//if list1 is not deplete
+			mergedList.add(list2.get(j));	//keep adding all elements
+			j++;
+			}
+		}
+		return mergedList;
+	}
+
+	/* A private method that recursively converts list to tree
+	 * return the root of the tree
+	 * tree: tree to be converted
+	 * parent: the parent of a node
+	 * start: start index of a part of the list
+	 * end:	end index of the same part of the list
+	 * */
+	private static<K, V> AVLNode convertListtoTree(AVLTree<K, V> tree, AVLNode<K, V> parent, ArrayList<Position<Entry<K, V>>> list, int start, int end){
+        if (start>end){	//if end index is greater than 
+        	return null;
+        }
+		
+		int mid = (start + end)/2;	// calculate the index of the element at the middle in list
+
+        AVLNode newNode = (AVLNode) tree.createNode(list.get(mid).element(), parent, null, null);	// create a new node with value of the middle index 
+
+        int height = (int)Math.ceil(Math.log(end+1)/Math.log(2));	//calculate the height of the node
+        newNode.setHeight(height);	// set the height of the node
+
+        newNode.setLeft(convertListtoTree(tree, (AVLNode)newNode, list, start, mid-1));	//set left nodes
+        newNode.setRight(convertListtoTree(tree, (AVLNode)newNode, list, mid+1, end));	//set right nodes
+        return newNode;
+        }
+
+	
+	/** Question 3
+	 * This class method creates a new window and prints the AVL tree specified by the
+	 * parameter on the new window. Each internal node is displayed by a circle containing
+	 * its key and each external node is displayed by a rectangle
+	 * Graph plot using JFrame
+	 * <K,V>: K - key, integer; V - value, string
+	 * @param tree: the tree to be printed
+	 * */
+	
+	public static <K, V> void print(AVLTree<K, V> tree){
+        JFrame newframe = new JFrame();	//create a new frame to plot
+        int height = 2000;
+        int width = 1000;
+        newframe.setSize(height, width);	//set initial height and width
+        printTree(tree.root, height/2, 0, width/2, 0, newframe);	
+		
+	}
+	
+	/* This private method recursively print a sub-tree; post-order traversal
+	 * node: a node in the tree
+	 * x: x-axis value
+	 * y: y-axis value
+	 * space: space distance between JFrame objects
+	 * height: height of the node
+	 * frame: Frame object
+	**/
+	private static <K, V> void printTree(BTPosition<Entry<K,V>> node, int x, int y, int space, int height, JFrame frame) {
+        int circleHeight = 50 - height*3;	//height of circle
+        int rectWidth = 30 - height*2;	//width of rectangle
+        int rectHeight = 30 - height*2;	//height of rectangle
+        
+        // Plot left tree; draw rectangle for external nodes
+        if (node.getLeft() != null && node.getLeft().element() != null) { //if there is left child and their elements exist
+        	printTree(node.getLeft(), x - space/2, y + 100, space/2, height + 1,frame); // set left child with new axis and height
+        } else {
+            frame.getContentPane().add(new Rectangle(x - space/2, y + 100, rectWidth, rectHeight)); //draw rectangle for external nodes
+            frame.setVisible(true);
+        }
+        
+        // Plot left tree; draw rectangle for external nodes
+        if (node.getRight() != null && node.getRight().element() != null) { //if there is right child and their elements exist
+        	printTree(node.getRight(), x + space/2, y + 100, space/2, height + 1, frame); // set right child with new axis and height
+        } else {
+            frame.getContentPane().add(new Rectangle(x + space/2, y + 100, rectWidth, rectHeight));//draw rectangle for external nodes
+            frame.setVisible(true);
+        }
+        
+
+        // Draw internal node as a circle
+        frame.getContentPane().add(new Circle(x, y, circleHeight));
+        frame.setVisible(true);
+        // Put key in circle
+        frame.getContentPane().add(new Text(node.element().getKey().toString(), x - height, y + circleHeight/2));
+        frame.setVisible(true);
+        // Draw left leg
+        frame.getContentPane().add(new Line(x, y + circleHeight, x - space/2, y + 100));
+        frame.setVisible(true);
+        // Draw right leg
+        frame.getContentPane().add(new Line(x, y + circleHeight, x + space/2, y + 100));
+        frame.setVisible(true);
+        }
+	
+	
+	// A private class to draw circles
+	private static class Circle extends JComponent {
+		// initialize axis of the center and height
+		int x = 0;	
+		int y = 0;
+		int w = 0;
+		int h = 0;
+	        
+		Circle(int x, int y, int d) { //constructor
+			// new axis and height
+			this.x = x-d/2;
+			this.y = y;
+			this.w = d;	//circle, W=h
+			this.h = d;	
+	        }
+	        
+		// An protected method to draw a circle
+		protected void paintComponent(Graphics g) {
+			g.drawOval(x, y, w, h);
+		}
+	}
+
+	// A private class to draw rectangles
+	private static class Rectangle extends JComponent {
+		// initialize axis of the center and height
+		int x = 0;
+		int y = 0;
+		int w = 0;
+		int h = 0;
+	        
+		Rectangle(int x, int y, int w, int h) {	//constructor
+		// new axis and height
+		this.x = x-w/2;
+		this.y = y;
+		this.w = w;
+		this.h = h;
+		}
+	        
+		// An protected method to draw a rectangle
+		protected void paintComponent(Graphics g) {
+			g.drawRect(x, y, w, h);
+		}
+	}
+	    
+	// A private class to draw lines
+	private static class Line extends JComponent {
+
+		// initialize axis of (x1, y1) (x2, y2)	
+		int x1 = 0;
+		int y1 = 0;
+		int x2 = 0;
+		int y2 = 0;
+	        
+		Line(int x1, int y1, int x2, int y2) {	//constructor
+			// new axes
+			this.x1 = x1;
+			this.y1 = y1;
+			this.x2 = x2;
+			this.y2 = y2;
+		}
+	    
+		// An protected method to draw a line
+		protected void paintComponent(Graphics g) {
+			g.drawLine(x1, y1, x2, y2);
+		}
+	}
+
+	// Drawing text for numbers within nodes
+	protected static class Text extends JComponent {
+		// declare string to be printed and initialize axis of the string
+		String s;
+		int x = 0;
+		int y = 0;
+	        
+		Text(String s, int x, int y) {
+			// new string and axis
+			this.s = s;
+			this.x = x;
+			this.y = y;
+		}
+
+		// An protected method to place the text
+		protected void paintComponent(Graphics g) {
+			g.drawString(s, x, y);
+		}
+	}
+
+	    
+	    /* Main Method*/
+	    public static void main(String[] args)
+        { 
+          String values1[]={"Sydney", "Beijing","Shanghai", "New York", "Tokyo", "Berlin",
+         "Athens", "Paris", "London", "Cairo"}; 
+          int keys1[]={20, 8, 5, 30, 22, 40, 12, 10, 3, 5};
+          String values2[]={"Fox", "Lion", "Dog", "Sheep", "Rabbit", "Fish"}; 
+          int keys2[]={40, 7, 5, 32, 20, 30};
+             
+          /* Create the first AVL tree with an external node as the root and the
+         default comparator */ 
+             
+            AVLTree<Integer, String> tree1=new AVLTree<Integer, String>();
+  
+          // Insert 10 nodes into the first tree
+             
+            for ( int i=0; i<10; i++)
+                tree1.insert(keys1[i], values1[i]);
+           
+          /* Create the second AVL tree with an external node as the root and the
+         default comparator */
+             
+            AVLTree<Integer, String> tree2=new AVLTree<Integer, String>();
+           
+          // Insert 6 nodes into the tree
+             
+            for ( int i=0; i<6; i++)
+                tree2.insert(keys2[i], values2[i]);
+             
+            ExtendedAVLTree.print(tree1);
+            ExtendedAVLTree.print(tree2); 
+            ExtendedAVLTree.print(ExtendedAVLTree.clone(tree1));
+            ExtendedAVLTree.print(ExtendedAVLTree.clone(tree2));
+            
+            ExtendedAVLTree.print(ExtendedAVLTree.merge(ExtendedAVLTree.clone(tree1), 
+            ExtendedAVLTree.clone(tree2)));
+          }
+}

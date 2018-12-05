@@ -1,0 +1,3 @@
+task1 4 0 10 task2 6 0 15 task3 2 2 6 task4 2 2 8 task5 2 2 8
+task6 5 1 13 task7 5 2 13 task8 6 5 19 task9 3 5 19
+task10 2 5 19 task11 4 6 24 task12 5 6 24
